@@ -252,13 +252,13 @@ def plotDig():
 
     # Generate and save the plot. 
     fig, ax1 = plt.subplots(figsize=(12,5))
-    ax1.set_ylim(0,30)
+    ax1.set_ylim(0,60)
     ax1.set_ylabel('192.168.7.1', color='tab:red')
     ax1.plot(x,y1, color='tab:red')
     ax1.tick_params(axis='y', labelcolor='tab:red')
 
     ax2 = ax1.twinx()
-    ax2.set_ylim(0,30)
+    ax2.set_ylim(0,60)
     ax2.set_ylabel('8.8.4.4', color='tab:blue')
     ax2.plot(x,y2, color='tab:blue')
     ax2.tick_params(axis='y', labelcolor='tab:blue')
