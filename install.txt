@@ -187,7 +187,11 @@ cd MonitorHomeISP
 # that look like this:
 #       iperf3('192.168.7.242')
 #       iperf3('192.168.7.245')
-# There are only two lines to change. 
+# There are only two lines to change.
+# Also, change the equivalen to '198.168.7.1' to your 'dot one' address. 
+# DO NOT change the 8.8.4.4 address. 
+
+# Edit the 'healthCheck.py' file and make the same changes. It will have only the 242 and 245 addresses. 
 
 ######
 ### Important: Test the 'setupNS.sh' file BEFORE making it a part of rc.local (below)
@@ -196,10 +200,10 @@ cd MonitorHomeISP
 ######
 
 # To test the file
-sudo ./setupNS.sh
+sudo ./setupNS.sh 
 
 # Health check:
-# There should be no error message. 
+# There should be no error messages. 
 # First, are you still connected?  Press enter a few times!
 # Second
 ifconfig
@@ -211,6 +215,9 @@ sudo ip netns list
 # if_lan (id: 1)
 # if_5GHz
 # if_2GHz (id: 2)
+
+# New capability 2020-04-08: Automated Health check. 
+./healthCheck.py
 
 # If all these health checks look OK, the proceed:
 
