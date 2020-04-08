@@ -3,7 +3,7 @@
 Pi based device to monitor and report on a typical home or SOHO internet connection. 
 
 # Inspiration from mr_canoehead on reddit
-Around April of 2020, mr_canoehead posted a Pi based monitor that inspired me to write this one. 
+Around April of 2020, mr_canoehead posted on reddit regarding a Pi based monitor that inspired me to write this one. 
 
 He posted some details including logical and physical diagrams, lists of adapters, and similar.  He did not post any code or detailed configurations.  His reddit thread was picked up and reblogged by Tom's Hardware and Google News, among others. Original reddit threads 
 [here](https://www.reddit.com/r/raspberry_pi/comments/fqs1fj/a_network_performance_monitor_for_my_home_network/ "reddit/r/raspberry_pi")
@@ -28,8 +28,8 @@ NONE at this time.  Feel free to experiment; I will not be taking issues or pull
 
 ## Software
 * Raspbian image (current from raspberrypi.org)  Get the "with desktop", the middle one. 
-* Other software detailed in installation checklist.
+* Other software detailed in installation checklist. All installed with apt or pip
 
 ## Installation
-Follow the steps in ...
+Follow the steps in [install.txt](https://github.com/DanalEstes/MonitorHomeISP/blob/master/install.txt)
 
