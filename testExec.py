@@ -48,8 +48,8 @@ def speedTest():
     queue.send(json.dumps({'mtype':'testExecSpeedTest','mtime':time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),'mdict':mdict})) 
     return()
 
-def iperf3(ip):
-    cmd = 'iperf3 -J -c '+ip
+def iperf3(interface,ip):
+    cmd = 'iperf3 -J -B '+interface+' -c '+ip
     proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE)
     outd = json.loads(proc.stdout.read())
     print('Writing iperf3 for ip '+ip+' to queue '+time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))
@@ -98,8 +98,8 @@ while(1):
 
     if ((tnow - prior15min) > 900):  # Fifteen minute tests.
         speedTest()
-        iperf3('192.168.7.242')
-        iperf3('192.168.7.245')
+        iperf3('192.168.7.240','192.168.7.242')
+        iperf3('192.168.7.240','192.168.7.245')
         dig('www.google.com','192.168.7.1')
         dig('www.google.com','8.8.4.4')
         prior15min = tnow
