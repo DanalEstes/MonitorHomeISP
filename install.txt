@@ -1,0 +1,262 @@
+# Get your Pi booted and on your network:
+
+# Download raspbian image (with desktop, no apps. The "middle" one.) from https://www.raspberrypi.org/downloads/
+# Etch image to SD card. (search google for balena etcher) 
+# Ignore windows error messages for the next drive letter after your SD.  DO NOT format. 
+# On the SD card, edit wpa_supplicant.conf for your network with UNIX LINE ENDS
+
+country=us
+update_config=1
+ctrl_interface=/var/run/wpa_supplicant
+
+network={
+ scan_ssid=1
+ ssid="MyNetworkSSID"
+ psk="Pa55w0rd1234"
+}
+
+# On the SD card, create a file named 'ssh'.  Empty is fine. 
+
+# Insert SD in Pi and power up. First boot takes an extra minute or two. 
+# Find IP address (varies a lot by router)  or try "duet3.local"
+# From your PC, enter:
+ssh pi@x.x.x.x
+
+# Default password is raspberry  CHANGE IT after you connect for the first time!
+# From the Pi command prompt:
+passwd
+
+# Set various options to your liking. 
+# At least set the timezone. 
+sudo raspi-config
+
+# Update the Pi itself:
+
+sudo apt update
+sudo apt upgrade  (this may take 15 to 60 minutes)
+
+# Reboot is not absolutely required... but... 
+sudo reboot
+
+# If you want to be able to edit files on the Pi from windows, via a netshare (not a mapped drive):
+sudo apt-get install samba
+sudo smbpasswd -a pi
+sudo nano /etc/samba/smb.conf   # and change 'read only = yes' to no. 
+# Then use a UNC like '\\192.168.7.101\pi' in a file open in your favorite editor.
+# Quite often, you may have to start with just the "\\192.168.7.101" and no subdirectory to get
+# it to prompt you for userid and password.  Use 'pi' and the password you set above.
+# You may have to try and retry several times to get connected.  It's worth it. 
+
+# Install network adapters
+
+## For the TP Link AC600 Wireless
+sudo wget http://downloads.fars-robotics.net/wifi-drivers/install-wifi -O /usr/bin/install-wifi
+sudo chmod +x /usr/bin/install-wifi
+sudo install-wifi
+
+# Assign static IP addresses.  I suggest a round number for the ether as shown below,
+# and a number ending in 2 for the 2.4GHz monitor and 5 for the 5GHz monitor.  Makes it
+# easier on us fallible humans. 
+## Obtain Mac addresses
+ip link list
+## Note: Set up static IP on the router, not the Pi  The following is *extracted from * the
+## 'ip link list' results on my Pi, combined with the IP addresses I wished to assing. 
+## I used these notes to go into my router and assign static DHCP addresses. 
+# wlan0 mac 98:48:27:2d:a1:0d static ip 192.168.7.245 USB WiFi        
+# wlan1 mac b8:27:eb:02:4d:a9 static ip 192.168.7.242 built in WiFi   
+#  eth0 mac b8:27:eb:57:18:fc static ip 192.168.7.240 built in Ether
+
+# Install bridging
+sudo apt-get install bridge-utils
+
+# Install queueing 
+sudo python3 -m pip install posix_ipc
+
+# Install things for network monitoring and reporting. 
+
+## Latex
+sudo apt install lyx
+## Build files with any editor, then
+## pdflatex filename
+## This will be used by scripts later. 
+
+## speedtest
+sudo apt install speedtest-cli
+
+## iperf
+sudo apt-get update
+sudo apt-get install iperf3 -y
+sudo nano /etc/rc.local
+
+## dig
+sudo apt-get install dnsutils
+## Test via:
+dig www.ibm.com
+
+## MatPlotLib
+sudo python3 -m pip install -U pip
+sudo python3 -m pip install -U matplotlib
+
+## Sqlite3
+sudo apt-get install sqlite3
+sudo apt install sqlitebrowser
+## The python dameons will create the DB if it does not exist. 
+
+# Email
+sudo apt install ssmtp
+
+# Git (source code manager)
+sudo apt install git
+
+# The scripts that make up the monitor itself. 
+git clone https://github.com/DanalEstes/MonitorHomeISP
+
+# That finishes a basic 'build'.  Everything from here on out is configuration. 
+# You might want to backup the SD card at this point.  Some of the changes
+# we are about to make can result in an un-bootable (or at least unreachable) pi. 
+
+# Make the wifi network adapters stay in order
+## Note: Pi keeps Ethernet and other interfaces with the same name eth0, eth1, etc. across
+## boots.  It does NOT do this for wlan0 and similar interfaces.  They can (and do!) change 
+## at any time as USB takes differing amounts of time to connect devices. 
+##
+sudo nano /etc/udev/rules.d/70-MonitorHomeISP-persistent-net.rules
+SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="dc:a6:32:57:f0:69", NAME="wbin0"
+SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="98:48:27:2d:a1:0d", NAME="wusb0"
+##
+## Note: You should have the IP addresses from the 'configure static IP on your router'
+## step above. 
+##
+## The above commands FORCE these adapters to stay in order, and they also assign unmistakble
+## names to avoid confusion. 
+## wbin0 = wireless built in.  The one on the Pi board. 
+## wsub0 = wireless usb. The adapter specified in the hardware list. 
+## You should reboot several times, with and without the USB device, to be ABSOLUTELY CERTAIN you 
+## have this correct.  A few steps down, if this is backwards, we will be locked out of the machine. 
+##
+## A nice verification is that the 'built in' on a Pi4, its mac address will always start with dc:a6:32
+
+
+
+######
+### Note: This section will be done for you by a script.  It is here for completeness of documentation.
+######
+# Set up network name spaces
+sudo ip netns add if_2GHz
+sudo ip netns add if_5GHz
+sudo ip netns add if_lan
+sudo ip netns add if_bridge
+
+# Move interfaces to correct namespace
+sudo ip link set eth0 netns if_lan
+sudo ip netns exec if_lan route add default gw 192.168.7.1
+
+sudo iw phy phy1 set netns name if_2GHz
+sudo ip netns exec if_2GHz ifconfig wlan1 192.168.7.242
+# sudo ip netns exec if_2GHz ifconfig wlan1 up
+sudo ip netns exec if_2GHz wpa_supplicant -iwlan1 -c/etc/wpa_supplicant/wpa_supplicant.conf
+sudo ip netns exec if_2GHz iperf3 -sD
+######
+### End of scripted section
+######
+
+# Change to the cloned directory
+cd MonitorHomeISP
+
+# Edit the 'setupNS.sh' file. 
+# 
+# Change the static IP addrresses to your own. 
+#
+# Change the sample file addresses ending in 240
+# to the desired static ip address of your eth0 adapter; 
+# plug this into any ethernet port on your router
+#
+# Change the sample file addresses ending in 242
+# to the desired static ip address of your wbin0 adapter 
+#
+# Change the sample file addresses ending in 245
+# to the desired static ip address of your wusb0 adapter
+#
+# Nothing else in the file should be changed. 
+
+# Edit the 'testExec.py' file and make the same changes. 
+# near the bottom of the file are the addresses, on lines 
+# that look like this:
+#       iperf3('192.168.7.242')
+#       iperf3('192.168.7.245')
+
+
+######
+### Important: Test the 'setupNS.sh' file BEFORE making it a part of rc.local (below)
+### If this file is wrong, it can make the machine unreachable. 
+### If this happens, use a screen and keyboard to recover. 
+######
+
+# To test the file
+./setupNS.sh
+
+# Health check:
+# There should be no error message. 
+# First, are you still connected?  Press enter a few times!
+# Second
+ifconfig
+# Should show only lo: and wusb0: interfaces.  If any others show up, something is wrong. 
+# Third
+ip netns list
+# Should show something very close to
+# if_bridge (id: 0)
+# if_lan (id: 1)
+# if_5GHz
+# if_2GHz (id: 2)
+
+# If all these health checks look OK, the proceed:
+
+# Edit the rc.local file so that the setupNS.sh is run at boot
+sudo nano /etc/rc.local
+# near the end of the file, place a line that says:
+/home/pi/MonitorHomeISP/setupNS.sh &
+# Then reboot. 
+sudo reboot
+# When you logon again, run the healthchecks above again.  They should be the same. 
+
+# Also perform these healthchecks:
+ps -ef | grep \\.py
+# Should produce something like
+#
+# root      1041     1  0 20:58 ?        00:00:01 python3 /home/pi/MonitorHomeISP/queueRecvDB.py
+# root      1046     1  0 20:58 ?        00:00:00 python3 /home/pi/MonitorHomeISP/testExec.py
+# root      1047     1  1 20:58 ?        00:01:44 python3 /home/pi/MonitorHomeISP/intfStats.py
+# pi        2650  1233  0 22:45 pts/0    00:00:00 grep --color=auto \.py 
+#
+# In particular, the three processes running via the root user should be there. 
+
+# Also perform these healthchecks:
+ps -ef | grep iper
+# Should produce something like
+#
+root      1043     1  0 20:58 ?        00:00:11 iperf3 -s -D -B 192.168.7.245 -J --logfile /tmp/iperfServer.log
+root      1045     1  0 20:58 ?        00:00:05 iperf3 -s -D -B 192.168.7.242 --logfile /tmp/wiperf.log
+pi        2658  1233  0 22:46 pts/0    00:00:00 grep --color=auto iper
+#
+# In particular, the two processes running via the root user should be there. 
+
+# Complete wiring. 
+# Unplug the short piece of ethernet cable betwen the WAN port on your router and your Cable or DSL modem. 
+# You will need an additional short cable to hook everything back up.
+# Plug the ethernet port on the end of USB hub on the Pi into the WAN port on the router. 
+# Plug the ethernet USB adapter into the port on your Cable or DSL modem. 
+
+###### WHEW!! THAT'S IT, the monitor is up and running. 
+
+# Reporting. 
+
+# logon and CD to MonitorHomeISP
+# Execute a daily report
+./dailyReport.py
+# or
+./dailyReport.py -yesterday
+#
+# This will generate a 'dailyReport.pdf' in the same directory. 
+# You could also automate this, running with the '-yesterday' flag sometime after midnight each night, and emailing the results to yourself. 
+
+
