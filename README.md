@@ -16,6 +16,9 @@ The core ideas for this monitor are directly inspired by mr_canoeheads sample re
 
 At this moment, this is in ALPHA status.  There are no detailed, step-by-step, instructions. You will need at least basic Linux or Raspberry Pi skills, comfortable at the command line, to install and use. 
 
+## Support
+NONE at this time.  Feel free to experiment; I will not be taking issues or pulls, or etc, until such time as I harden this up quite a bit.  Come back often and look for commits. 
+
 ## Hardware
 * Raspberry Pi 4b with 2Gig (or more) of ram.  Example at [Amazon](https://www.amazon.com/gp/product/B07V2B4W63).  There are plenty of other sources.
 * TP-Link 3-Port USB 3.0 Portable USB Hub with 1 Gigabit Ethernet Port Network Adapter (UE330). [Amazon](https://www.amazon.com/gp/product/B01N9M32TA) 
