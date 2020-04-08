@@ -6,7 +6,6 @@
 import subprocess
 import posix_ipc as ipc
 
-
 errorMsgs=[]
 
 # The important part of this method is updating the error message array
@@ -22,8 +21,6 @@ def checkFor(output,check1,check2):
 
 	global errorMsgs
 	errorMsgs.append('MonitorHomeISP health check FAIL: Missing or incorrect: '+check1+' '+check2)
-	global fail
-	fail = True
 
 def runCmd(cmd):
 	proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE)
@@ -77,9 +74,7 @@ try:
 	queue=ipc.MessageQueue('/netmToDB')
 	if (queue.current_messages > 6):
 		errorMsgs.append('MonitorHomeISP health check FAIL: Queue depth = '+str(queue.current_messages))
-		fail=True
 except: 		
 	errorMsgs.append('MonitorHomeISP health check FAIL: Queue does not exist or this task does not have permissions.')
-	fail=True	
 checkSection('Message queue is healthy.')
 
