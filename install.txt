@@ -46,6 +46,9 @@ sudo nano /etc/samba/smb.conf   # and change 'read only = yes' to no.
 # Quite often, you may have to start with just the "\\192.168.7.101" and no subdirectory to get
 # it to prompt you for userid and password.  Use 'pi' and the password you set above.
 # You may have to try and retry several times to get connected.  It's worth it. 
+# BE SURE that your editor HONORS UNIX LINE ENDS and that you turn them on in any new files. 
+# For windows users, I suggest notepad++ or atom or Sublime Text (that last one costs money. Worth every penny)
+
 
 # Install network adapters
 
@@ -184,7 +187,7 @@ cd MonitorHomeISP
 # that look like this:
 #       iperf3('192.168.7.242')
 #       iperf3('192.168.7.245')
-
+# There are only two lines to change. 
 
 ######
 ### Important: Test the 'setupNS.sh' file BEFORE making it a part of rc.local (below)
@@ -193,7 +196,7 @@ cd MonitorHomeISP
 ######
 
 # To test the file
-./setupNS.sh
+sudo ./setupNS.sh
 
 # Health check:
 # There should be no error message. 
@@ -202,7 +205,7 @@ cd MonitorHomeISP
 ifconfig
 # Should show only lo: and wusb0: interfaces.  If any others show up, something is wrong. 
 # Third
-ip netns list
+sudo ip netns list
 # Should show something very close to
 # if_bridge (id: 0)
 # if_lan (id: 1)
