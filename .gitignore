@@ -1,4 +1,13 @@
+# Keep passwords in mail scripts off of github
 mail*
+# Images that go into the pdf (which is tracked)
+*.png
+# The operational database
+*.db
+# side effects of latex
+*.aux
+*.tex.save
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
