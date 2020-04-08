@@ -3,7 +3,9 @@
 Pi based device to monitor and report on a typical home or SOHO internet connection. 
 
 # Inspiration from mr_canoehead on reddit
-Around April of 2020, mr_canoehead posted a Pi based monitor that inspired me to write this one. He posted some details including logical and physical diagrams, lists of adapters, and similar.  He did not post any code or detailed configurations.  His reddit thread was picked up and reblogged by Tom's Hardware and Google News, among others. Original reddit threads 
+Around April of 2020, mr_canoehead posted a Pi based monitor that inspired me to write this one. 
+
+He posted some details including logical and physical diagrams, lists of adapters, and similar.  He did not post any code or detailed configurations.  His reddit thread was picked up and reblogged by Tom's Hardware and Google News, among others. Original reddit threads 
 [here](https://www.reddit.com/r/raspberry_pi/comments/fqs1fj/a_network_performance_monitor_for_my_home_network/ "reddit/r/raspberry_pi")
 and
 [here](https://old.reddit.com/r/linux/comments/fq4s49/having_some_fun_with_network_namespaces_built_a/ "reddit/r/linux").
@@ -20,3 +22,11 @@ At this moment, this is in ALPHA status.  There are no detailed, step-by-step, i
 * TP-Link USB to Ethernet Adapter (TL-UE300) [Amazon](https://www.amazon.com/gp/product/B00YUU3KC6)
 * TP-Link USB Wifi Adapter for PC AC600Mbps Wireless Network Adapter (this may change) [Amazon](https://www.amazon.com/gp/product/B07P5PRK7J)
 * TP-Link AC1300 - USB 3.0 Mini WiFi Adapter [Amazon](https://www.amazon.com/gp/product/B07P6N2TZH) - I haven't received one of these yet, and they appear to have gone out of stock.  So this may or may not be an alternative. 
+
+## Software
+* Raspbian image (current from raspberrypi.org)  Get the "with desktop", the middle one. 
+* Other software detailed in installation checklist.
+
+## Installation
+Follow the steps in ...
+
