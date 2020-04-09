@@ -13,7 +13,7 @@ def checkFor(output,check1,check2):
 	global errorMsgs
 	lines = [line for line in output if check1 in str(line)]
 
-	if (not check2 == '' ):
+	if ((len(lines) > 0) and (not check2 == '')):
 		lines = [line for line in output if check2 in str(line)]
 
 	if (len(lines) > 0):
@@ -24,8 +24,7 @@ def checkFor(output,check1,check2):
 
 def runCmd(cmd):
 	proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE)
-	ps = proc.stdout.read()
-	ps = ps.splitlines()
+	ps = proc.stdout.readlines()
 	return(ps)
 
 def checkSection(msg):
@@ -41,10 +40,10 @@ def checkSection(msg):
 ######
 
 ps = runCmd('ip netns list')
-checkFor(ps,'if_bridge', 'id: ')
-checkFor(ps,'if_lan',    'id: ')
-checkFor(ps,'if_5GHz',   'id: ')
-checkFor(ps,'if_2GHz',   'id: ')
+checkFor(ps,'if_bridge', '')
+checkFor(ps,'if_lan',    '')
+checkFor(ps,'if_5GHz',   '')
+checkFor(ps,'if_2GHz',   '')
 checkSection('Network Name Spaces are healthy.')
 
 ps = runCmd('ps -ef')
@@ -63,9 +62,9 @@ ps = runCmd('sudo ip netns exec if_lan ip link list')
 checkFor(ps,'eth0',  'UP')
 checkSection('IP Links are healthy.')
 ps = runCmd('sudo ip netns exec if_bridge ip link list')
-checkFor(ps,'br0',  'UP')
-checkFor(ps,'eth1', 'UP')
-checkFor(ps,'eth2', 'UP')
+checkFor(ps,'br0',  'LOWER_UP')
+checkFor(ps,'eth1', 'LOWER_UP')
+checkFor(ps,'eth2', 'LOWER_UP')
 checkSection('Layer 2 Links are healthy.')
 
 # No underlying command for this one, so the flags in the

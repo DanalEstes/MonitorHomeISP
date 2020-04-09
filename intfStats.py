@@ -34,8 +34,8 @@ intfStatAcc = {}
 def init():
     # parse command line arguments
     parser = argparse.ArgumentParser(description='Captures network interfase stats to sqlite db.')
-    parser.add_argument('-intfsec',type=float,nargs=1,default=[1])
-    parser.add_argument('-datasec',type=float,nargs=1,default=[59])
+    parser.add_argument('-intfsec',type=float,nargs=1,default=[10])
+    parser.add_argument('-datasec',type=float,nargs=1,default=[29])
     args=vars(parser.parse_args())
     global intfsec, datasec	
     intfsec  = args['intfsec'][0]
@@ -53,6 +53,8 @@ def findIntf():
         dir = os.listdir('/sys/class/net/'+intf+'/statistics/')
         intfStatOld[intf] = dict((n,0) for n in dir)
         intfStatAcc[intf] = dict((n,0) for n in dir)
+        intfStatOld[intf]['seconds'] = time.time()
+
 
 def accumStats():
     global intfStatOld, intfStatAcc
@@ -83,6 +85,7 @@ while(1):
             print("Writing to DB Queue. "+intf,time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()), flush=True)
             intfDict = intfStatAcc[intf]
             intfDict['intfName'] = intf
+            intfDict['seconds']  = time.time() - intfStatOld[intf]['seconds'] 
             queue.send(json.dumps({'mtype':'intfStats','mtime':time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),'mdict':intfDict})) 
         oldtime = time.time()
         findIntf()

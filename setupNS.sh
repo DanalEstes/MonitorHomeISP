@@ -13,6 +13,9 @@ ip link set eth1 netns if_bridge
 ip netns exec if_bridge brctl addbr br0
 ip netns exec if_bridge brctl addif br0 eth2
 ip netns exec if_bridge brctl addif br0 eth1
+ip netns exec if_bridge ip link set eth1 up
+ip netns exec if_bridge ip link set eth2 up
+ip netns exec if_bridge ip link set br0  up
 
 # Built in Ether
 ip link set eth0 netns if_lan

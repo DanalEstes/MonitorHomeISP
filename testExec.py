@@ -14,6 +14,7 @@ import time
 import os
 import posix_ipc as ipc
 import json
+import re
 
 # Globals.
 
@@ -31,6 +32,19 @@ def openQueue():
 	queue=ipc.MessageQueue('/netmToDB', flags=ipc.O_CREAT, )
 
 
+def getIP(netns):
+    cmd  = 'ip -n '+netns+' address list'
+    proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE)
+    outp = proc.stdout.readlines()    
+    try: 
+        line = str([line for line in outp if 'inet ' in str(line)][0])
+        ip   = re.search(r'([\d.]+)',line).group(0)
+    except:
+        ip = ''
+    if (len(ip) < 7):
+        print('Failure to locate IP addressed adapters in netns '+netns)
+        exit(8)
+    return(ip)
 
 def pingGoogle():
     ip = '8.8.4.4'
@@ -43,7 +57,10 @@ def pingGoogle():
 def speedTest():
     cmd='speedtest --json'
     proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE)
-    mdict = json.loads(proc.stdout.readline())
+    try:
+        mdict = json.loads(proc.stdout.readline())
+    except:
+        mdict = {'download':0, 'upload':0}
     print('Writing speedtest to queue ',time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))
     queue.send(json.dumps({'mtype':'testExecSpeedTest','mtime':time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),'mdict':mdict})) 
     return()
@@ -54,13 +71,12 @@ def iperf3(interface,ip):
     outd = json.loads(proc.stdout.read())
     print('Writing iperf3 for ip '+ip+' to queue '+time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))
     try:
-        queue.send(json.dumps({'mtype':'testExecIperf3', \
-            'mtime':time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()), \
-            'mdict':{'ip':ip,'rbps':outd['end']['sum_received']['bits_per_second']} \
-            }))
+        mdict = {'ip':ip,'rbps':outd['end']['sum_received']['bits_per_second']}
     except:
-        print('Queue command failed; often this means response from iperf3 did not contain proper "end" section.')
-        print(outd)
+        mdict = {'ip':ip,'rbps':0}
+    queue.send(json.dumps({'mtype':'testExecIperf3', \
+        'mtime':time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()), \
+        'mdict':mdict}))
     return()
 
 def dig(host,dns):
@@ -81,8 +97,12 @@ def dig(host,dns):
 ###########################
 # Main code begins here
 ###########################
-
 init()
+
+IPeth0 = getIP('if_lan')
+IP2GHz = getIP('if_2GHz')
+#IP5GHz = getIP('')  # How to access the root netns????
+IPdotOne = re.search(r'([\d]+\.[\d]+\.[\d]+\.)',IPeth0).group(0)+'1'
 
 prior01min = 0
 prior05min = 0
@@ -98,9 +118,9 @@ while(1):
 
     if ((tnow - prior15min) > 900):  # Fifteen minute tests.
         speedTest()
-        iperf3('192.168.7.240','192.168.7.242')
-        iperf3('192.168.7.240','192.168.7.245')
-        dig('www.google.com','192.168.7.1')
+        iperf3(IPeth0, IP2GHz)
+        iperf3(IPeth0, '192.168.7.245')
+        dig('www.google.com',IPdotOne)
         dig('www.google.com','8.8.4.4')
         prior15min = tnow
 

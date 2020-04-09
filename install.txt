@@ -60,14 +60,32 @@ sudo install-wifi
 # Assign static IP addresses.  I suggest a round number for the ether as shown below,
 # and a number ending in 2 for the 2.4GHz monitor and 5 for the 5GHz monitor.  Makes it
 # easier on us fallible humans. 
+#
 ## Obtain Mac addresses
 ip link list
 ## Note: Set up static IP on the router, not the Pi  The following is *extracted from * the
 ## 'ip link list' results on my Pi, combined with the IP addresses I wished to assing. 
 ## I used these notes to go into my router and assign static DHCP addresses. 
+#
 # wlan0 mac 98:48:27:2d:a1:0d static ip 192.168.7.245 USB WiFi        
 # wlan1 mac b8:27:eb:02:4d:a9 static ip 192.168.7.242 built in WiFi   
 #  eth0 mac b8:27:eb:57:18:fc static ip 192.168.7.240 built in Ether
+#
+# Note: The above addresses were from a Pi 3B.  Note the 'be:27:eb' first three octets
+# of the mac addresses on the built in.  This is Raspberry Pi's manufacurer code. 
+# A Pi 4B will have  a prefix of 'dc:a6:32'
+# For a 4b: the equivalent to the above is/was:
+#
+# wlan0 mac 98:48:27:2d:a1:0d static ip 192.168.7.245 USB WiFi        
+# wlan1 mac dc:a6:32:57:f0:69 static ip 192.168.7.242 built in WiFi   
+#  eth0 mac dc:a6:32:57:f0:68 static ip 192.168.7.240 built in Ether
+#
+
+# Set power management off on the built in adapter. 
+# Hit both, because we can't be sure at this point which is which,
+# they may actually change from boot to boot. 
+sudo iwconfig wlan0 power off
+sudo iwconfig wlan1 power off
 
 # Install bridging
 sudo apt-get install bridge-utils
@@ -118,6 +136,11 @@ git clone https://github.com/DanalEstes/MonitorHomeISP
 # You might want to backup the SD card at this point.  Some of the changes
 # we are about to make can result in an un-bootable (or at least unreachable) pi. 
 
+# Prevent ethernet interfaces that will be 'between' the router and modem from
+# obtaining IP addresses.  If they do become IP active, all kinds of havoc occurs. 
+sudo nano /etc/dhcpcd.conf
+denyinterfaces eth1, eth2
+
 # Make the wifi network adapters stay in order
 ## Note: Pi keeps Ethernet and other interfaces with the same name eth0, eth1, etc. across
 ## boots.  It does NOT do this for wlan0 and similar interfaces.  They can (and do!) change 
@@ -139,36 +162,21 @@ SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="98:48:27:2d:a1:0d", NAME="wusb0
 ##
 ## A nice verification is that the 'built in' on a Pi4, its mac address will always start with dc:a6:32
 
-
-
-######
-### Note: This section will be done for you by a script.  It is here for completeness of documentation.
-######
-# Set up network name spaces
-sudo ip netns add if_2GHz
-sudo ip netns add if_5GHz
-sudo ip netns add if_lan
-sudo ip netns add if_bridge
-
-# Move interfaces to correct namespace
-sudo ip link set eth0 netns if_lan
-sudo ip netns exec if_lan route add default gw 192.168.7.1
-
-sudo iw phy phy1 set netns name if_2GHz
-sudo ip netns exec if_2GHz ifconfig wlan1 192.168.7.242
-# sudo ip netns exec if_2GHz ifconfig wlan1 up
-sudo ip netns exec if_2GHz wpa_supplicant -iwlan1 -c/etc/wpa_supplicant/wpa_supplicant.conf
-sudo ip netns exec if_2GHz iperf3 -sD
-######
-### End of scripted section
-######
+# Optionally, provide static fall back for your main way into the box. 
+sudo nano /etc/dhcpcd.conf
+profile static_wusb0
+static ip_address=192.168.7.245/24
+static routers=192.168.7.1
+static domain_name_servers=192.168.7.1
+interface wusb0
+fallback static_wusb0
 
 # Change to the cloned directory
 cd MonitorHomeISP
 
 # Edit the 'setupNS.sh' file. 
 # 
-# Change the static IP addrresses to your own. 
+# Change the static IP addresses to your own. 
 #
 # Change the sample file addresses ending in 240
 # to the desired static ip address of your eth0 adapter; 
@@ -269,4 +277,38 @@ pi        2658  1233  0 22:46 pts/0    00:00:00 grep --color=auto iper
 # This will generate a 'dailyReport.pdf' in the same directory. 
 # You could also automate this, running with the '-yesterday' flag sometime after midnight each night, and emailing the results to yourself. 
 
+
+#################
+### Following are notes, not commands to execute
+### Just here for the documentation
+#################
+
+# Macaddr of WiFi
+# cat /sys/class/net/wusb0/device/ieee80211/phy1/macaddress
+# Macaddr of Any interface
+# cat /sys/class/net/eth0/address
+# cat /sys/class/net/wusb0/address
+
+
+######
+### Note: This section will be done for you by a script.  It is here for completeness of documentation.
+######
+# Set up network name spaces
+sudo ip netns add if_2GHz
+sudo ip netns add if_5GHz
+sudo ip netns add if_lan
+sudo ip netns add if_bridge
+
+# Move interfaces to correct namespace
+sudo ip link set eth0 netns if_lan
+sudo ip netns exec if_lan route add default gw 192.168.7.1
+
+sudo iw phy phy1 set netns name if_2GHz
+sudo ip netns exec if_2GHz ifconfig wlan1 192.168.7.242
+# sudo ip netns exec if_2GHz ifconfig wlan1 up
+sudo ip netns exec if_2GHz wpa_supplicant -iwlan1 -c/etc/wpa_supplicant/wpa_supplicant.conf
+sudo ip netns exec if_2GHz iperf3 -sD
+######
+### End of scripted section
+######
 

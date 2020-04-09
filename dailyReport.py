@@ -55,6 +55,7 @@ def smoothGaps(data):
     return(data)
 
 def plotPing():
+    print('Plotting Ping basic Up/Down')
     global cur
 
     # Prototype the X and Y value lists
@@ -99,10 +100,11 @@ def plotPing():
 
     fig.autofmt_xdate()
 
-    plt.title('Internet Up/Down based on Ping of 8.8.8.8')
+    plt.title('Internet Up/Down based on Ping of 8.8.4.4')
     plt.savefig('dailyReportPing.png', bbox_inches='tight')
 
 def plotSpeedTest():
+    print('Plotting Speed Tests')
     global cur
 
     # Prototype the X and Y value lists
@@ -163,6 +165,7 @@ def plotSpeedTest():
     plt.savefig('dailyReportSpeedTest.png', bbox_inches='tight')
 
 def plotIperf3():
+    print('Plotting Iperf3 client tests')
     global cur
 
     cur.execute('select distinct ip from testExecIperf3')
@@ -213,6 +216,7 @@ def plotIperf3():
         plt.savefig('dailyReportIperf'+ip[0][-1]+'.png', bbox_inches='tight')
 
 def plotDig():
+    print('Plotting Dig (dns resolution) response time. ')
     global cur
 
     # Prototype the X and Y value lists
@@ -273,6 +277,7 @@ def plotDig():
     plt.savefig('dailyReportDig.png', bbox_inches='tight')
 
 def plotIntfStats():
+    print('Plotting Interface Bit Per Second Rates.')
     global cur
 
     cur.execute('select distinct intfName from intfStats')
@@ -280,7 +285,8 @@ def plotIntfStats():
 
     for intf in distinctIntf:
         # Prototype the X and Y value lists
-        x, y = x10minDT()
+        x, y1 = x10minDT()
+        y2    = y1.copy()
 
         # Calculate date ranges for DB read
         start = datetime.date.today() 
@@ -290,9 +296,10 @@ def plotIntfStats():
         if (yesterday): end += datetime.timedelta(-1)
         end   = end.strftime('%Y-%m-%d 23:59:59')
 
-        cmd = 'SELECT date, intfName, tx_Bytes as tx, rx_Bytes as rx from intfStats '
+        #cmd = 'SELECT date, intfName, avg(tx_Bytes) as tx, avg(rx_Bytes) as rx from intfStats '
+        cmd = 'SELECT date, intfName, tx_Bytes, rx_Bytes, seconds from intfStats '
         cmd += 'WHERE date > "'+start+'" and '+'date < "'+end+'" and intfName = "'+intf[0]+'" '
-        cmd += 'GROUP BY substr(date,0,16) ' # 14 = by hour, 16 = by 10 min
+        #cmd += 'GROUP BY substr(date,0,16) ' # 14 = by hour, 16 = by 10 min
         cmd += 'ORDER BY date '
         cur.execute(cmd)
         rows = cur.fetchall()
@@ -302,25 +309,45 @@ def plotIntfStats():
             secs = time.mktime(time.strptime(row[0], '%Y-%m-%d %H:%M:%S'))
             base = time.mktime(time.strptime(row[0][0:10], '%Y-%m-%d'))
             i = int((secs-base)/(10*60)) 
-            if ((i < 0) or (i > len(y))): 
+            if ((i < 0) or (i > len(y1))): 
                 print('Y index screwed up somewhere!',i)
                 next
 
-            y[i] = (row[2] / 1024 / 1024)  # bits per second / 1024 /1024 = Mbits/sec
+            #y1[i] = ((row[2] * 8) / row[4] / 1024 / 1024)  # Bytes * 8 / seconds = bits per second / 1024 / 1024 = Mbits/sec
+            mbps = ((row[2] * 8) / row[4] / 1024 / 1024)  # Bytes * 8 / seconds = bits per second / 1024 / 1024 = Mbits/sec
+            if (y1[i]):
+                y1[i] = max(y1[i], mbps) 
+            else:
+                y1[i] = mbps
 
-        y = smoothGaps(y)    
+            mbps = ((row[3] * 8) / row[4] / 1024 / 1024)  # Bytes * 8 / seconds = bits per second / 1024 / 1024 = Mbits/sec
+            if (y2[i]):
+                y2[i] = max(y2[i], mbps)
+            else:
+                y2[i] = mbps
+
+        #y1 = smoothGaps(y1)    
+        #y2 = smoothGaps(y2)    
         # Generate and save the plot
-        fig, ax = plt.subplots(figsize=(10,4))
-        #ax.set_ylim(0,300)
-        plt.plot(x,y)
+        fig, ax1 = plt.subplots(figsize=(10,4))
+        ax1.set_ylim(0,50)
+        ax1.set_ylabel('Transmitted Mb/s', color='tab:red')
+        ax1.plot(x,y1, color='tab:red')
+        ax1.tick_params(axis='y', labelcolor='tab:red')
+        ax1.grid(axis='x', linestyle='-')
 
-        plt.grid(axis='x', linestyle='-')
+        ax2 = ax1.twinx()
+        ax2.set_ylim(0,50)
+        ax2.set_ylabel('Received Mb/s', color='tab:blue')
+        ax2.plot(x,y2, color='tab:blue')
+        ax2.tick_params(axis='y', labelcolor='tab:blue')
+
         n=(int(len(x)/24))
-        [l.set_visible(False) for (i,l) in enumerate(ax.xaxis.get_ticklabels()) if ((i % n) != 0)]
+        #[l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
         fig.autofmt_xdate()
 
-        plt.title('Bits Per Second via interface '+intf[0])
+        plt.title('MBits Per Second, 10 sec peak of each 10 min interval, interface '+intf[0])
         plt.savefig('dailyReportIntf'+intf[0]+'.png', bbox_inches='tight')
 
 
