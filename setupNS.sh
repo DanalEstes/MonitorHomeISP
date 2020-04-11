@@ -27,7 +27,7 @@ ip netns exec if_lan route add default gw 192.168.7.1
 iw phy phy0 set netns name if_2GHz
 ip netns exec if_2GHz ifconfig wbin0 192.168.7.242
 sleep 1
-ip netns exec if_2GHz wpa_supplicant -B -c /etc/wpa_supplicant/wpa_supplicant.conf -i wbin0
+ip netns exec if_2GHz wpa_supplicant -B -c /etc/if_2GHz/wpa_supplicant/wpa_supplicant.conf -i wbin0
 
 # USB attached WiFi
 # As of 4/4/2020, the USB adapters I have do not support netns
