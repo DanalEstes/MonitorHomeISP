@@ -34,8 +34,8 @@ intfStatAcc = {}
 def init():
     # parse command line arguments
     parser = argparse.ArgumentParser(description='Captures network interfase stats to sqlite db.')
-    parser.add_argument('-intfsec',type=float,nargs=1,default=[10])
-    parser.add_argument('-datasec',type=float,nargs=1,default=[29])
+    parser.add_argument('-intfsec',type=float,nargs=1,default=[2])
+    parser.add_argument('-datasec',type=float,nargs=1,default=[90])
     args=vars(parser.parse_args())
     global intfsec, datasec	
     intfsec  = args['intfsec'][0]
@@ -62,7 +62,11 @@ def accumStats():
         for stat in intfStatAcc[intf]:
             fn = '/sys/class/net/'+intf+'/statistics/'+stat
             with open (fn, 'r') as f: num = int(f.readlines()[0].rstrip())
-            if (not intfStatOld[intf][stat] == 0): intfStatAcc[intf][stat] = intfStatAcc[intf][stat] + (num - intfStatOld[intf][stat])
+
+            #if(('eth2' == intf) and ('tx_bytes' == stat)):
+            #    print('num ', num, ' old ', intfStatOld[intf][stat], ' minus ', num - intfStatOld[intf][stat]  )
+            if (num < intfStatOld[intf][stat]     ): num += 0xFFFFFFFF            
+            if (not   intfStatOld[intf][stat] == 0): intfStatAcc[intf][stat] = intfStatAcc[intf][stat] + (num - intfStatOld[intf][stat])
             intfStatOld[intf][stat] = num
 
 def openQueue():

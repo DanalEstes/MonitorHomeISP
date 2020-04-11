@@ -314,7 +314,8 @@ def plotIntfStats():
                 next
 
             #y1[i] = ((row[2] * 8) / row[4] / 1024 / 1024)  # Bytes * 8 / seconds = bits per second / 1024 / 1024 = Mbits/sec
-            mbps = ((row[2] * 8) / row[4] / 1024 / 1024)  # Bytes * 8 / seconds = bits per second / 1024 / 1024 = Mbits/sec
+            mbps = ((row[2] * 8) / row[4] / 1024 / 1024 )  # Bytes * 8 / seconds = bits per second / 1024 / 1024 = Mbits/sec
+            #print(intf,' ',row[0],' i ',i,' tx ',row[2],' rx ',row[3],' seconds ',row[4],' y1[i] ',y1[i],' mbps ',mbps)
             if (y1[i]):
                 y1[i] = max(y1[i], mbps) 
             else:
@@ -326,20 +327,23 @@ def plotIntfStats():
             else:
                 y2[i] = mbps
 
+
         #y1 = smoothGaps(y1)    
         #y2 = smoothGaps(y2)    
         # Generate and save the plot
         fig, ax1 = plt.subplots(figsize=(10,4))
-        ax1.set_ylim(0,50)
+        #ax1.set_ylim(0,50)
         ax1.set_ylabel('Transmitted Mb/s', color='tab:red')
         ax1.plot(x,y1, color='tab:red')
+        #ax1.set_yscale('symlog')
         ax1.tick_params(axis='y', labelcolor='tab:red')
         ax1.grid(axis='x', linestyle='-')
 
         ax2 = ax1.twinx()
-        ax2.set_ylim(0,50)
+        #ax2.set_ylim(0,50)
         ax2.set_ylabel('Received Mb/s', color='tab:blue')
         ax2.plot(x,y2, color='tab:blue')
+        #ax2.set_yscale('symlog')
         ax2.tick_params(axis='y', labelcolor='tab:blue')
 
         n=(int(len(x)/24))
