@@ -87,6 +87,22 @@ ip link list
 sudo iwconfig wlan0 power off
 sudo iwconfig wlan1 power off
 
+# Force the built in adapter to 2GHz channels.
+sudo mkdir /etc/if_2GHz
+sudo mkdir /etc/if_2GHz/wpa_supplicant
+sudo cp  /etc/wpa_supplicant/wpa_supplicant.conf  /etc/if_2GHz/wpa_supplicant/wpa_supplicant.conf
+sudo nano /etc/if_2GHz/wpa_supplicant/wpa_supplicant.conf
+country=us
+update_config=1
+ctrl_interface=/var/run/wpa_supplicant
+
+freq_list=2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462
+network={
+ scan_ssid=1
+ ssid="MyNetworkSSID"
+ psk="Pa55w0rd1234"
+}
+
 # Install bridging
 sudo apt-get install bridge-utils
 
