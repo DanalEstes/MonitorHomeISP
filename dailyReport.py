@@ -96,8 +96,9 @@ def plotPing():
     plt.plot(x,y)
 
     plt.grid(axis='x', linestyle='-', which='major')
-    n=(int(len(x)/24))
-    [l.set_visible(False) for (i,l) in enumerate(ax.xaxis.get_ticklabels()) if ((i % n) != 0)]
+    if (len(x)>24): 
+        n=(int(len(x)/24))
+        [l.set_visible(False) for (i,l) in enumerate(ax.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
     fig.autofmt_xdate()
 
@@ -158,8 +159,9 @@ def plotSpeedTest():
     ax2.tick_params(axis='y', labelcolor='tab:blue')
 
     ax1.grid(True, linestyle='-.')
-    n=(int(len(x)/24))
-    [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
+    if (len(x)>24): 
+        n=(int(len(x)/24))
+        [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
 
     fig.autofmt_xdate()
@@ -211,8 +213,9 @@ def plotIperf3():
         plt.plot(x,y)
 
         plt.grid(axis='x', linestyle='-')
-        n=(int(len(x)/24))
-        [l.set_visible(False) for (i,l) in enumerate(ax.xaxis.get_ticklabels()) if ((i % n) != 0)]
+        if (len(x)>24): 
+            n=(int(len(x)/24))
+            [l.set_visible(False) for (i,l) in enumerate(ax.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
         fig.autofmt_xdate()
 
@@ -273,8 +276,9 @@ def plotDig():
     ax2.tick_params(axis='y', labelcolor='tab:blue')
 
     ax1.grid(True, linestyle='-.')
-    n=(int(len(x)/24))
-    [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
+    if (len(x)>24): 
+        n=(int(len(x)/24))
+        [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
 
     fig.autofmt_xdate()
@@ -353,8 +357,9 @@ def plotIntfStats():
         #ax2.set_yscale('symlog')
         ax2.tick_params(axis='y', labelcolor='tab:blue')
 
-        n=(int(len(x)/24))
-        [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
+        if (len(x)>24): 
+            n=(int(len(x)/24))
+            [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
         fig.autofmt_xdate()
 

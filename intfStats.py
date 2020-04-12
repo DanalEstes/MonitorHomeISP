@@ -21,6 +21,7 @@ import time
 import os
 import posix_ipc as ipc
 import json
+import re
 
 # Globals.
 oldtime  = time.time()
@@ -34,7 +35,7 @@ intfStatAcc = {}
 def init():
     # parse command line arguments
     parser = argparse.ArgumentParser(description='Captures network interfase stats to sqlite db.')
-    parser.add_argument('-intfsec',type=float,nargs=1,default=[2])
+    parser.add_argument('-intfsec',type=float,nargs=1,default=[10])
     parser.add_argument('-datasec',type=float,nargs=1,default=[90])
     args=vars(parser.parse_args())
     global intfsec, datasec	
@@ -47,27 +48,40 @@ def init():
 def findIntf():
     # Find all the interfaces, ignore lo (loopback).
     global intfStatOld, intfStatAcc
-    dir = os.listdir('/sys/class/net/')
-    dir.remove('lo')
-    for intf in dir:
-        dir = os.listdir('/sys/class/net/'+intf+'/statistics/')
-        intfStatOld[intf] = dict((n,0) for n in dir)
-        intfStatAcc[intf] = dict((n,0) for n in dir)
-        intfStatOld[intf]['seconds'] = time.time()
+    proc = subprocess.Popen('ifconfig', shell=True,stdout=subprocess.PIPE)
+    outd = proc.stdout.read().decode()
+    dir  = re.findall('(^\w*?):',outd,re.M)
+    try:
+        dir.remove('lo:')
+    except: 
+        None
 
+    for intf in dir:
+        stats = ['tx_bytes','rx_bytes']
+        intfStatOld[intf] = dict((n,0) for n in stats)
+        intfStatAcc[intf] = dict((n,0) for n in stats)
+        intfStatOld[intf]['seconds'] = time.time()
 
 def accumStats():
     global intfStatOld, intfStatAcc
     for intf in intfStatAcc:
-        for stat in intfStatAcc[intf]:
-            fn = '/sys/class/net/'+intf+'/statistics/'+stat
-            with open (fn, 'r') as f: num = int(f.readlines()[0].rstrip())
+        proc = subprocess.Popen('ifconfig '+intf, shell=True,stdout=subprocess.PIPE)
+        outd = proc.stdout.read().decode()
+        tx_bytes = -1
+        rx_bytes = -1
+        try:
+            rx_bytes = int(re.search('RX packets .*?bytes (\d+?) ',outd).group(1))
+            tx_bytes = int(re.search('TX packets .*?bytes (\d+?) ',outd).group(1))
+        except:
+            None
 
-            #if(('eth2' == intf) and ('tx_bytes' == stat)):
-            #    print('num ', num, ' old ', intfStatOld[intf][stat], ' minus ', num - intfStatOld[intf][stat]  )
-            if (num < intfStatOld[intf][stat]     ): num += 0xFFFFFFFF            
-            if (not   intfStatOld[intf][stat] == 0): intfStatAcc[intf][stat] = intfStatAcc[intf][stat] + (num - intfStatOld[intf][stat])
-            intfStatOld[intf][stat] = num
+        if (rx_bytes < intfStatOld[intf]['rx_bytes']     ): rx_bytes += 0xFFFFFFFF            
+        if (not   intfStatOld[intf]['rx_bytes'] == 0): intfStatAcc[intf]['rx_bytes'] = intfStatAcc[intf]['rx_bytes'] + (rx_bytes - intfStatOld[intf]['rx_bytes'])
+        intfStatOld[intf]['rx_bytes'] = rx_bytes
+
+        if (tx_bytes < intfStatOld[intf]['tx_bytes']     ): tx_bytes += 0xFFFFFFFF            
+        if (not   intfStatOld[intf]['tx_bytes'] == 0): intfStatAcc[intf]['tx_bytes'] = intfStatAcc[intf]['tx_bytes'] + (tx_bytes - intfStatOld[intf]['tx_bytes'])
+        intfStatOld[intf]['tx_bytes'] = tx_bytes
 
 def openQueue():
     # Open, or create, the Queue that leads to the Database. 

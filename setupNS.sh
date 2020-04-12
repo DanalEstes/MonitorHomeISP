@@ -21,7 +21,7 @@ ip netns exec if_bridge ip link set br0  up
 ip link set eth0 netns if_lan
 ip netns exec if_lan ifconfig eth0 192.168.7.240
 ip netns exec if_lan route add default gw 192.168.7.1
-
+ip netns exec if_lan /usr/sbin/sshd 
 
 # Built in WiFi
 iw phy phy0 set netns name if_2GHz
