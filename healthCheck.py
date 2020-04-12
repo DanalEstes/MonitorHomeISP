@@ -20,7 +20,7 @@ def checkFor(output,check1,check2):
 		return(0)
 
 	global errorMsgs
-	errorMsgs.append('MonitorHomeISP health check FAIL: Missing or incorrect: '+check1+' '+check2)
+	errorMsgs.append('MonitorHomeISP health check FAIL: >>>>> Missing or incorrect: '+check1+' '+check2+' <<<<< FAIL')
 
 def runCmd(cmd):
 	proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE)
@@ -32,6 +32,7 @@ def checkSection(msg):
 	if (0 == len(errorMsgs)):
 		print('MonitorHomeISP health check PASS: '+msg)
 	else:
+		print('MonitorHomeISP health check FAIL: >>>>> '+msg+' <<<<< FAIL  Details of failure:')
 		[print(line) for line in errorMsgs]
 		errorMsgs = []
 
@@ -44,7 +45,7 @@ checkFor(ps,'if_bridge', '')
 checkFor(ps,'if_lan',    '')
 checkFor(ps,'if_5GHz',   '')
 checkFor(ps,'if_2GHz',   '')
-checkSection('Network Name Spaces are healthy.')
+checkSection('Network Name Spaces are correctly defined.')
 
 ps = runCmd('ps -ef')
 checkFor(ps,'testExec.py',     '')
@@ -52,7 +53,15 @@ checkFor(ps,'queueRecvDB.py',  '')
 checkFor(ps,'intfStats.py',    '')
 checkFor(ps,'iperf3',          '192.168.7.245')
 checkFor(ps,'iperf3',          '192.168.7.242')
-checkSection('Daemons are healthy.')
+checkSection('Daemons processes found and appear healthy.')
+
+ps = runCmd('ip link list')
+checkFor(ps,'wusb0','')
+ps = runCmd('sudo ip netns exec if_2GHz ip link list')
+checkFor(ps,'wbin0','')
+ps = runCmd('sudo ip netns exec if_lan ip link list')
+checkFor(ps,'eth0','')
+checkSection('Layer 3 Links are defined correctly, and in the correct netns.')
 
 ps = runCmd('ip link list')
 checkFor(ps,'wusb0',  'UP')
@@ -60,12 +69,17 @@ ps = runCmd('sudo ip netns exec if_2GHz ip link list')
 checkFor(ps,'wbin0',  'UP')
 ps = runCmd('sudo ip netns exec if_lan ip link list')
 checkFor(ps,'eth0',  'UP')
-checkSection('IP Links are healthy.')
+checkSection('Layer 3 Links are up and running and healthy.')
+
 ps = runCmd('sudo ip netns exec if_bridge ip link list')
+checkFor(ps,'br0','')
+checkFor(ps,'eth1','')
+checkFor(ps,'eth2','')
+checkSection('Layer 2 Links are defined correctly, and in the correct netns.')
 checkFor(ps,'br0',  'LOWER_UP')
 checkFor(ps,'eth1', 'LOWER_UP')
 checkFor(ps,'eth2', 'LOWER_UP')
-checkSection('Layer 2 Links are healthy.')
+checkSection('Layer 2 Links are up and running and healthy.')
 
 # No underlying command for this one, so the flags in the
 # runCmd and checkFor must be set manually. 

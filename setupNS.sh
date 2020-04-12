@@ -38,8 +38,8 @@ ifconfig wusb0  192.168.7.245
 # Now, start the daemons in the various namespaces
 sleep 5
 /home/pi/MonitorHomeISP/queueRecvDB.py >/tmp/queuRecvDB.log 2>&1 &
-iperf3 -s -D -B 192.168.7.245 -J --logfile /tmp/iperfServer.log 
-ip netns exec if_2GHz iperf3 -s -D -B 192.168.7.242 --logfile /tmp/wiperf.log
+iperf3 -s -D -B 192.168.7.245 -J --logfile /tmp/iperfServer245.log 
+ip netns exec if_2GHz iperf3 -s -D -B 192.168.7.242 --logfile /tmp/iperfServer242.log
 ip netns exec if_lan /home/pi/MonitorHomeISP/testExec.py >/tmp/testExec.log 2>&1 &
 ip netns exec if_bridge /home/pi/MonitorHomeISP/intfStats.py >/tmp/intfStats.log 2>&1 &
 

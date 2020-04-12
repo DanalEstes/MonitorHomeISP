@@ -49,6 +49,7 @@ def x10minDT():
     return([x,y])
 
 def smoothGaps(data):
+    data = [x for n, x in enumerate(data) if any(y is not None for y in data[n:])]  # Remove trailing Nones
     for i, val in enumerate(data):
         if (val is None):
             data[i] = data[i-1]
@@ -141,6 +142,7 @@ def plotSpeedTest():
 
     y1 = smoothGaps(y1)
     y2 = smoothGaps(y2)
+    x = x[:len(y1)] 
 
     # Generate and save the plot. 
     fig, ax1 = plt.subplots(figsize=(12,5))
@@ -201,6 +203,8 @@ def plotIperf3():
             y[i] = (row[1] / 1024 / 1024)  # bits per second / 1024 /1024 = Mbits/sec
 
         y = smoothGaps(y)    
+        x = x[:len(y)] 
+
         # Generate and save the plot
         fig, ax = plt.subplots(figsize=(10,4))
         ax.set_ylim(0,300)
@@ -253,6 +257,7 @@ def plotDig():
 
     y1 = smoothGaps(y1)
     y2 = smoothGaps(y2)
+    x = x[:len(y1)]     
 
     # Generate and save the plot. 
     fig, ax1 = plt.subplots(figsize=(12,5))
@@ -328,8 +333,10 @@ def plotIntfStats():
                 y2[i] = mbps
 
 
-        #y1 = smoothGaps(y1)    
-        #y2 = smoothGaps(y2)    
+        y1 = smoothGaps(y1)    
+        y2 = smoothGaps(y2) 
+        x = x[:len(y1)]
+
         # Generate and save the plot
         fig, ax1 = plt.subplots(figsize=(10,4))
         #ax1.set_ylim(0,50)
@@ -347,7 +354,7 @@ def plotIntfStats():
         ax2.tick_params(axis='y', labelcolor='tab:blue')
 
         n=(int(len(x)/24))
-        #[l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
+        [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
         fig.autofmt_xdate()
 
