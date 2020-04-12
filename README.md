@@ -33,7 +33,6 @@ This hardware combination seems to run with medium term (several hours) stabilit
 Pi4s seem to have lots of heat problems.  I have a couple of big heatsinks on order.  I will update as soon as I find something effective and fanless. 
 
 * Raspberry Pi 4b with 2Gig (or more) of ram.  Example at [Amazon](https://www.amazon.com/gp/product/B07V2B4W63).  There are plenty of other sources.
-(https://www.amazon.com/gp/product/B01N9M32TA)~~
 * TP-Link USB to Ethernet Adapter (TL-UE300) [Amazon](https://www.amazon.com/gp/product/B00YUU3KC6) -  Two of these.
 * TP-Link USB Wifi Adapter for PC AC600Mbps Wireless Network Adapter (this may change) [Amazon](https://www.amazon.com/gp/product/B07P5PRK7J)
 * TP-Link AC1300 - USB 3.0 Mini WiFi Adapter [Amazon](https://www.amazon.com/gp/product/B07P6N2TZH) - I haven't received one of these yet, and they appear to have gone out of stock.  So this may or may not be an alternative. 
