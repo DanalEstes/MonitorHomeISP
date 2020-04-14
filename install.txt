@@ -50,6 +50,38 @@ sudo nano /etc/samba/smb.conf   # and change 'read only = yes' to no.
 # For windows users, I suggest notepad++ or atom or Sublime Text (that last one costs money. Worth every penny)
 
 
+# Setup hardware real time clock 
+## Normally Pi uses NTP; obviously that won't work if internet is down!
+## Given this is literally a downtime monitor, we need date/time whether inet up or not. 
+##
+## Physically install the RTC.  
+## Plug it into the long row of GPIO pins that is furthest from a long edge. 
+## Plug it into the end of that row, nearest a short edge. 
+## Plug it so the "overhang" does not block other pins. 
+
+## Under 'interfaces' enable I2C
+sudo raspi-config
+
+## Set the clock for the first time. 
+sudo bash
+echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+hwclock -w
+exit 
+
+## Verify it took the setting
+hwclock -r
+
+## Add the device to startup.  Add the lines at the bottom, just before the return(0)
+sudo nano /etc/rc.local
+echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+hwclock -s
+
+## Take your internet down, reboot and check that date/time are correct. 
+sudo reboot
+## After it comes back
+date
+
+
 # Install network adapters
 
 ## For the TP Link AC600 Wireless
@@ -103,6 +135,7 @@ network={
  psk="Pa55w0rd1234"
 }
 
+# 14 Apr 2020: Skip this step for now, it sometimes breaks things. 
 # Force the USB adapter to 5GHz channels.
 sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
 country=us
@@ -228,7 +261,7 @@ cd MonitorHomeISP
 #       iperf3('192.168.7.242')
 #       iperf3('192.168.7.245')
 # There are only two lines to change.
-# Also, change the equivalen to '198.168.7.1' to your 'dot one' address. 
+# Also, change the equivalent to '198.168.7.1' to your 'dot one' address. 
 # DO NOT change the 8.8.4.4 address. 
 
 # Edit the 'healthCheck.py' file and make the same changes. It will have only the 242 and 245 addresses. 
@@ -263,7 +296,9 @@ sudo ip netns list
 
 # Edit the rc.local file so that the setupNS.sh is run at boot
 sudo nano /etc/rc.local
-# near the end of the file, place a line that says:
+# Near the end of the file, 
+# put it after the Real Time Clock stuff you put in above, and before the return(0)
+# insert a line that says:
 /home/pi/MonitorHomeISP/setupNS.sh &
 # Then reboot. 
 sudo reboot
@@ -293,8 +328,8 @@ pi        2658  1233  0 22:46 pts/0    00:00:00 grep --color=auto iper
 # Complete wiring. 
 # Unplug the short piece of ethernet cable betwen the WAN port on your router and your Cable or DSL modem. 
 # You will need an additional short cable to hook everything back up.
-# Plug the ethernet port on the end of USB hub on the Pi into the WAN port on the router. 
-# Plug the ethernet USB adapter into the port on your Cable or DSL modem. 
+# Plug an ethernet USB adapter on the Pi into the WAN port on the router. 
+# Plug the other ethernet USB adapter into the port on your Cable or DSL modem. 
 
 ###### WHEW!! THAT'S IT, the monitor is up and running. 
 

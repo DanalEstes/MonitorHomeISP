@@ -106,18 +106,23 @@ IPdotOne = re.search(r'([\d]+\.[\d]+\.[\d]+\.)',IPeth0).group(0)+'1'
 
 prior01min = 0
 prior05min = 0
+prior07min = 0 
 prior15min = 0
 prior60min = 0
 while(1):
     global queue
     time.sleep(10)
     tnow = int(time.time())
+
     if ((tnow - prior01min) > 59):  # One minute tests.
         pingGoogle()
         prior01min = tnow
 
-    if ((tnow - prior15min) > 900):  # Fifteen minute tests.
+    if ((tnow - prior07min) > 420):  # Seven minute tests.
+        prior07min = tnow
         speedTest()
+
+    if ((tnow - prior15min) > 900):  # Fifteen minute tests.
         iperf3(IPeth0, IP2GHz)
         iperf3(IPeth0, '192.168.7.245')
         dig('www.google.com',IPdotOne)

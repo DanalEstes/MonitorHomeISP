@@ -50,9 +50,10 @@ def x10minDT():
 
 def smoothGaps(data):
     data = [x for n, x in enumerate(data) if any(y is not None for y in data[n:])]  # Remove trailing Nones
-    for i, val in enumerate(data):
+    data = data[:len(data)-1]        # And drop the very last one, it will be a partial and therfore inaccurate. 
+    for i, val in enumerate(data):   # Paper over gaps with preceding values. 
         if (val is None):
-            data[i] = data[i-1]
+            data[i] = data[max(0,i-1)]
     return(data)
 
 def plotPing():
@@ -89,16 +90,22 @@ def plotPing():
             next
         y[i] = 3 - (2 * (not row[1]<2))
 
+
+    y = [x for n, x in enumerate(y) if any(z is not 2 for z in y[n:])]  # Remove trailing Unknowns
+    x = x[:len(y)-1] 
+    y = y[:len(x)] 
+
     # Generate the plot
-    fig, ax = plt.subplots(figsize=(10,4))
+    fig, ax = plt.subplots(figsize=(15,3))
     ax.set_ylim([0.75, 3.25])
     plt.yticks([3, 2, 1], ['UP', 'UNKNOWN', 'DOWN' ])
-    plt.plot(x,y)
+    plt.bar(x,y)
 
-    plt.grid(axis='x', linestyle='-', which='major')
+    #plt.grid(axis='x', linestyle='-', which='major')
     if (len(x)>24): 
-        n=(int(len(x)/24))
+        n=(round(len(x)/24))
         [l.set_visible(False) for (i,l) in enumerate(ax.xaxis.get_ticklabels()) if ((i % n) != 0)]
+        ax.xaxis.get_ticklabels()[-1].set_visible(True)
 
     fig.autofmt_xdate()
 
@@ -160,12 +167,12 @@ def plotSpeedTest():
 
     ax1.grid(True, linestyle='-.')
     if (len(x)>24): 
-        n=(int(len(x)/24))
+        n=(round(len(x)/24))
         [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
 
     fig.autofmt_xdate()
-    plt.title('SpeedTest download and upload speeds, Mbps, Direct Ethernet Connection')
+    plt.title('SpeedTest, Mbps, Direct Ethernet Connection to In House router.')
     plt.savefig('dailyReportSpeedTest.png', bbox_inches='tight')
 
 def plotIperf3():
@@ -214,7 +221,7 @@ def plotIperf3():
 
         plt.grid(axis='x', linestyle='-')
         if (len(x)>24): 
-            n=(int(len(x)/24))
+            n=(round(len(x)/24))
             [l.set_visible(False) for (i,l) in enumerate(ax.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
         fig.autofmt_xdate()
@@ -277,7 +284,7 @@ def plotDig():
 
     ax1.grid(True, linestyle='-.')
     if (len(x)>24): 
-        n=(int(len(x)/24))
+        n=(round(len(x)/24))
         [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
 
@@ -358,7 +365,7 @@ def plotIntfStats():
         ax2.tick_params(axis='y', labelcolor='tab:blue')
 
         if (len(x)>24): 
-            n=(int(len(x)/24))
+            n=(round(len(x)/24))
             [l.set_visible(False) for (i,l) in enumerate(ax1.xaxis.get_ticklabels()) if ((i % n) != 0)]
 
         fig.autofmt_xdate()
