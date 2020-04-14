@@ -38,8 +38,8 @@ Pi4s seem to have lots of heat problems.  I have a couple of big heatsinks on or
 * Raspberry Pi 4b with 2Gig (or more) of ram.  Example at [Amazon](https://www.amazon.com/gp/product/B07V2B4W63).  There are plenty of other sources.
 * TP-Link USB to Ethernet Adapter (TL-UE300) [Amazon](https://www.amazon.com/gp/product/B00YUU3KC6) -  Two of these.
 * TP-Link USB Wifi Adapter for PC AC600Mbps Wireless Network Adapter (this may change) [Amazon](https://www.amazon.com/gp/product/B07P5PRK7J)
-
-I am not running a USB3 hub; you may choose to do so.  Pick a simple, and robust, one. 
+* DS3231 High Precision RTC Real Time Clock Module 3.3V/5V for Arduino Raspberry Pi (Amazon 'HiLetgo' is one source)
+* I am not running a USB3 hub; you may choose to do so.  Pick a simple, and robust, one. 
 
 ## Software
 * Raspbian image (current from raspberrypi.org)  Get the "with desktop", the middle one. 
