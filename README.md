@@ -1,7 +1,8 @@
 # MonitorHomeISP
 
 Pi based device to monitor and report on a typical home or SOHO internet connection. 
-Produces one of [these](https://github.com/DanalEstes/MonitorHomeISP/blob/master/dailyReport.pdf) every 24 hours (or when you trigger it): 
+
+Produces one of [these](https://github.com/DanalEstes/MonitorHomeISP/blob/master/dailyReport.pdf) every 24 hours (or when you trigger it). 
 
 
 # Inspiration from mr_canoehead on reddit
